@@ -4,7 +4,7 @@
 
 A free, no-login dollar-cost averaging (DCA) calculator that shows you the real historical returns of any stock, ETF, or cryptocurrency.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-i--wish--i--invested.vercel.app-4f8ef7?style=for-the-badge)](https://i-wish-i-invested.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-i--wish--i--invested.vercel.app-4f8ef7?style=for-the-badge)](https://iwishiinvested.vercel.app/)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/victorpiella)
 
 ![I Wish I Invested](og-image.png)
