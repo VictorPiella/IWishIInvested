@@ -1,1346 +1,1944 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>I Wish I Invested — DCA Calculator</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>I Wish I Invested — DCA Calculator</title>
 
-  :root {
-    --bg-0: #060a12;
-    --bg-1: #0b1120;
-    --bg-2: #101828;
-    --bg-3: #1a2540;
-    --border: #1e2d45;
-    --border-2: #2d3f5a;
-    --accent: #4f8ef7;
-    --accent-dim: rgba(79,142,247,0.15);
-    --green: #22c55e;
-    --green-dim: rgba(34,197,94,0.12);
-    --red: #f87171;
-    --red-dim: rgba(248,113,113,0.12);
-    --purple: #a78bfa;
-    --text-1: #f1f5f9;
-    --text-2: #94a3b8;
-    --text-3: #475569;
-  }
+    <!-- SEO -->
+    <meta
+      name="description"
+      content="See how much money you would have made investing in any stock, ETF, or crypto with dollar-cost averaging (DCA). Free historical investment calculator."
+    />
+    <meta
+      name="keywords"
+      content="DCA calculator, dollar cost averaging, investment calculator, stock returns, ETF calculator, crypto DCA, what if I invested"
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://i-wish-i-invested.vercel.app/" />
 
-  html { scroll-behavior: smooth; }
+    <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://i-wish-i-invested.vercel.app/" />
+    <meta property="og:title" content="I Wish I Invested — DCA Calculator" />
+    <meta
+      property="og:description"
+      content="See how much money you would have made investing in any stock, ETF, or crypto with dollar-cost averaging. Free historical investment calculator."
+    />
+    <meta
+      property="og:image"
+      content="https://i-wish-i-invested.vercel.app/og-image.png"
+    />
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg-0);
-    color: var(--text-1);
-    min-height: 100vh;
-    line-height: 1.5;
-  }
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="I Wish I Invested — DCA Calculator" />
+    <meta
+      name="twitter:description"
+      content="See how much money you would have made investing in any stock, ETF, or crypto with dollar-cost averaging. Free historical investment calculator."
+    />
+    <meta
+      name="twitter:image"
+      content="https://i-wish-i-invested.vercel.app/og-image.png"
+    />
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg-1); }
-  ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "I Wish I Invested",
+        "url": "https://i-wish-i-invested.vercel.app/",
+        "description": "Dollar-cost averaging calculator that shows historical returns for any stock, ETF, or cryptocurrency.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
 
-  /* Header */
-  header {
-    background: rgba(6,10,18,0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    padding: 0 32px;
-  }
-  .header-inner {
-    max-width: 1400px;
-    margin: 0 auto;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-1);
-    text-decoration: none;
-  }
-  .logo-icon {
-    width: 32px; height: 32px;
-    background: var(--accent);
-    border-radius: 8px;
-    display: grid;
-    place-items: center;
-    font-size: 16px;
-  }
-  .logo span { color: var(--accent); }
-  .header-badge {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-3);
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
-
-  /* Main layout */
-  .container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 24px 32px 64px;
-  }
-
-  .hero {
-    text-align: center;
-    padding: 48px 0 36px;
-  }
-  .hero h1 {
-    font-size: 42px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    line-height: 1.15;
-    margin-bottom: 12px;
-  }
-  .hero h1 em { font-style: normal; color: var(--accent); }
-  .hero p {
-    font-size: 16px;
-    color: var(--text-2);
-    max-width: 520px;
-    margin: 0 auto;
-  }
-
-  /* Calculator layout */
-  .calc-grid {
-    display: grid;
-    grid-template-columns: 380px 1fr;
-    gap: 24px;
-    align-items: start;
-  }
-
-  /* Input panel */
-  .input-panel {
-    position: sticky;
-    top: 80px;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-  .panel-header {
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--border);
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--text-2);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .panel-body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 18px; }
-
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-2);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .input-row { display: flex; gap: 8px; }
-  .input-wrap {
-    position: relative;
-    flex: 1;
-  }
-  .input-wrap .prefix,
-  .input-wrap .suffix {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-3);
-    font-size: 14px;
-    pointer-events: none;
-  }
-  .input-wrap .prefix { left: 12px; }
-  .input-wrap .suffix { right: 12px; }
-  input[type="text"],
-  input[type="number"],
-  input[type="date"],
-  select {
-    width: 100%;
-    background: var(--bg-3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text-1);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    padding: 10px 12px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    outline: none;
-    -webkit-appearance: none;
-    appearance: none;
-  }
-  input[type="text"]:focus,
-  input[type="number"]:focus,
-  input[type="date"]:focus,
-  select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-dim);
-  }
-  input[type="text"].has-prefix,
-  input[type="number"].has-prefix { padding-left: 28px; }
-  input[type="number"].has-suffix { padding-right: 28px; }
-  input[type="text"] { text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
-  input[type="date"] { color-scheme: dark; }
-  select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 32px;
-    cursor: pointer;
-  }
-  .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  /* Ticker status */
-  .ticker-status {
-    font-size: 12px;
-    font-weight: 500;
-    padding: 6px 10px;
-    border-radius: 6px;
-    display: none;
-    align-items: center;
-    gap: 6px;
-  }
-  .ticker-status.success { display: flex; background: var(--green-dim); color: var(--green); }
-  .ticker-status.error   { display: flex; background: var(--red-dim); color: var(--red); }
-
-  /* ISIN exchange picker */
-  .exchange-picker {
-    display: none;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 8px;
-    padding: 12px;
-    background: var(--bg-3);
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-  }
-  .exchange-picker.visible { display: flex; }
-  .exchange-picker-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-3);
-  }
-  .exchange-picker-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-2);
-    line-height: 1.4;
-  }
-  .exchange-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .exch-btn {
-    padding: 4px 10px;
-    border-radius: 6px;
-    border: 1px solid var(--border-2);
-    background: var(--bg-2);
-    color: var(--text-2);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .exch-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-  .exch-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-
-  /* Preset time buttons */
-  .preset-row { display: flex; gap: 4px; margin-bottom: 8px; }
-  .preset-btn {
-    flex: 1;
-    padding: 5px 2px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--bg-3);
-    color: var(--text-3);
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .preset-btn:hover  { border-color: var(--accent); color: var(--accent); }
-  .preset-btn.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
-
-  /* Compare divider */
-  .compare-divider {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-3);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin: 2px 0;
-  }
-  .compare-divider::before,
-  .compare-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-  /* Buttons */
-  .btn {
-    border: none;
-    border-radius: 8px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    white-space: nowrap;
-  }
-  .btn-sm { font-size: 13px; padding: 10px 14px; }
-  .btn-primary {
-    width: 100%;
-    font-size: 15px;
-    padding: 13px 20px;
-    background: var(--accent);
-    color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 24px rgba(79,142,247,0.25);
-  }
-  .btn-primary:hover { background: #6ba3f9; box-shadow: 0 4px 32px rgba(79,142,247,0.45); transform: translateY(-1px); }
-  .btn-primary:active { transform: translateY(0); }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .btn-outline {
-    background: var(--bg-3);
-    border: 1px solid var(--border);
-    color: var(--text-2);
-    font-size: 13px;
-    padding: 10px 16px;
-  }
-  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* Error box */
-  .error-box {
-    background: var(--red-dim);
-    border: 1px solid rgba(248,113,113,0.25);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 13px;
-    color: var(--red);
-    display: none;
-    align-items: flex-start;
-    gap: 8px;
-    margin-top: 4px;
-  }
-  .error-box.visible { display: flex; }
-
-  /* Results panel */
-  .results-panel { display: flex; flex-direction: column; gap: 24px; }
-
-  /* Empty state */
-  .empty-state {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 80px 32px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-  .empty-icon {
-    width: 64px; height: 64px;
-    background: var(--bg-3);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    display: grid;
-    place-items: center;
-    font-size: 28px;
-  }
-  .empty-state h3 { font-size: 20px; font-weight: 700; }
-  .empty-state p { font-size: 14px; color: var(--text-2); max-width: 340px; line-height: 1.6; }
-
-  /* Loading */
-  .loading-state {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 80px 32px;
-    text-align: center;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-  .loading-state.visible { display: flex; }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-state p { font-size: 15px; color: var(--text-2); }
-
-  /* Summary cards */
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-  .card {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 18px;
-  }
-  .card-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-3);
-    margin-bottom: 8px;
-  }
-  .card-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 22px;
-    font-weight: 500;
-    color: var(--text-1);
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .badge {
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 20px;
-  }
-  .badge.green { background: var(--green-dim); color: var(--green); }
-  .badge.red   { background: var(--red-dim); color: var(--red); }
-
-  /* Chart card */
-  .chart-card {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-  }
-  .chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .chart-title { font-size: 16px; font-weight: 700; }
-  .chart-sub { font-size: 13px; color: var(--text-2); margin-top: 2px; }
-  .chart-legend {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--text-2);
-  }
-  .legend-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .legend-dash {
-    width: 16px; height: 2px;
-    border-top: 2px dashed #475569;
-    flex-shrink: 0;
-  }
-  .chart-wrap { position: relative; height: 320px; }
-
-  /* Comparison */
-  .comparison-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-  .comparison-card {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    position: relative;
-    transition: border-color 0.2s;
-  }
-  .comparison-card.winner { border-color: var(--green); }
-  .comparison-card.loser  { opacity: 0.7; }
-  .winner-badge {
-    position: absolute;
-    top: -10px;
-    right: 16px;
-    background: var(--green);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
-  .comp-label {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-3);
-    margin-bottom: 10px;
-  }
-  .comp-name { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
-  .comp-stat { margin-bottom: 10px; }
-  .comp-stat-label { font-size: 11px; color: var(--text-2); margin-bottom: 3px; }
-  .comp-stat-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 18px;
-    font-weight: 500;
-  }
-  .comp-stat-value.green { color: var(--green); }
-  .comp-stat-value.red   { color: var(--red); }
-  .comp-note {
-    font-size: 12px;
-    color: var(--text-3);
-    margin-top: 8px;
-    line-height: 1.5;
-  }
-
-  /* Table */
-  .table-card {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-  .table-header {
-    padding: 18px 24px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .table-title { font-size: 15px; font-weight: 700; }
-  .table-count { font-size: 12px; color: var(--text-3); }
-  .table-wrap { overflow-x: auto; max-height: 400px; overflow-y: auto; }
-  table { width: 100%; border-collapse: collapse; }
-  thead { position: sticky; top: 0; z-index: 2; }
-  thead tr { background: var(--bg-3); }
-  th {
-    padding: 10px 14px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-3);
-    text-align: right;
-    white-space: nowrap;
-  }
-  th:first-child { text-align: left; }
-  td {
-    padding: 9px 14px;
-    font-size: 12px;
-    font-family: 'JetBrains Mono', monospace;
-    text-align: right;
-    color: var(--text-2);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  td:first-child { text-align: left; color: var(--text-1); }
-  tbody tr:hover { background: var(--bg-3); }
-  tbody tr:last-child td { border-bottom: none; }
-  td.positive { color: var(--green); }
-  td.negative { color: var(--red); }
-
-  /* Section wrappers (for animation) */
-  .result-section { opacity: 0; }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .animate-in { animation: fadeInUp 0.4s ease forwards; }
-
-  /* Footer */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 24px 32px;
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-3);
-    margin-top: 48px;
-  }
-  footer span { color: var(--text-3); margin: 0 8px; }
-
-  /* Section headings */
-  .section-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text-2);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 12px;
-  }
-
-  .coverage-warn {
-    margin-top: 12px;
-    padding: 10px 14px;
-    background: rgba(79,142,247,0.08);
-    border: 1px solid rgba(79,142,247,0.25);
-    border-radius: 8px;
-    color: #7aaef8;
-    font-size: 13px;
-  }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .calc-grid { grid-template-columns: 1fr; }
-    .input-panel { position: static; }
-    .summary-grid { grid-template-columns: repeat(2, 1fr); }
-    .comparison-grid { grid-template-columns: 1fr; }
-    .hero h1 { font-size: 28px; }
-    .container { padding: 16px 16px 48px; }
-    header { padding: 0 16px; }
-  }
-  @media (max-width: 480px) {
-    .summary-grid { grid-template-columns: 1fr 1fr; }
-  }
-</style>
-</head>
-<body>
-
-<header>
-  <div class="header-inner">
-    <a class="logo" href="#">
-      <div class="logo-icon">📈</div>
-      I Wish I <span>Invested</span>
-    </a>
-    <div class="header-badge">DCA Simulator</div>
-  </div>
-</header>
-
-<div class="container">
-  <div class="hero">
-    <h1>What if you had invested<br /><em>every single month?</em></h1>
-    <p>Simulate Dollar Cost Averaging for any stock or ETF using real historical data. See how regular investing compares to a lump sum strategy.</p>
-  </div>
-
-  <div class="calc-grid">
-    <!-- Input Panel -->
-    <aside class="input-panel">
-      <div class="panel-header">Parameters</div>
-      <div class="panel-body">
-
-        <div class="field">
-          <label>Ticker Symbol</label>
-          <div class="input-row">
-            <div class="input-wrap" style="flex:1">
-              <input type="text" id="ticker" placeholder="AAPL, VOO or ISIN: IE00B4L5Y983" autocomplete="off" />
-            </div>
-            <button class="btn btn-outline btn-sm" id="checkBtn" type="button">Check</button>
-          </div>
-          <div class="ticker-status" id="tickerStatus"></div>
-          <div class="exchange-picker" id="exchangePicker">
-            <div class="exchange-picker-label">Select exchange</div>
-            <div class="exchange-picker-name" id="isinFundName"></div>
-            <div class="exchange-list" id="exchangeList"></div>
-          </div>
-        </div>
-
-        <div class="compare-divider">vs</div>
-
-        <div class="field">
-          <label>Second Ticker <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
-          <div class="input-row">
-            <div class="input-wrap" style="flex:1">
-              <input type="text" id="ticker2" placeholder="AAPL, BTC-USD or ISIN…" autocomplete="off" />
-            </div>
-            <button class="btn btn-outline btn-sm" id="checkBtn2" type="button">Check</button>
-          </div>
-          <div class="ticker-status" id="tickerStatus2"></div>
-          <div class="exchange-picker" id="exchangePicker2">
-            <div class="exchange-picker-label">Select exchange</div>
-            <div class="exchange-picker-name" id="isinFundName2"></div>
-            <div class="exchange-list" id="exchangeList2"></div>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Date Range</label>
-          <div class="preset-row">
-            <button class="preset-btn" data-preset="ytd">YTD</button>
-            <button class="preset-btn" data-preset="1y">1Y</button>
-            <button class="preset-btn" data-preset="3y">3Y</button>
-            <button class="preset-btn" data-preset="5y">5Y</button>
-            <button class="preset-btn" data-preset="10y">10Y</button>
-            <button class="preset-btn" data-preset="all">All</button>
-          </div>
-          <div class="date-row">
-            <input type="date" id="startDate" />
-            <input type="date" id="endDate" />
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Investment Frequency</label>
-          <select id="frequency">
-            <option value="weekly">Weekly</option>
-            <option value="biweekly">Bi-weekly (every 2 weeks)</option>
-            <option value="monthly" selected>Monthly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="annually">Annually</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Amount Per Period</label>
-          <div class="input-wrap">
-            <span class="prefix">$</span>
-            <input type="number" id="amount" class="has-prefix" value="500" min="1" step="1" />
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Annual Inflation Rate</label>
-          <div class="input-wrap">
-            <input type="number" id="inflationRate" class="has-suffix" value="2.5" min="0" max="30" step="0.1" />
-            <span class="suffix">%</span>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" id="calcBtn" type="button">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Calculate Returns
-        </button>
-
-        <div class="error-box" id="errorBox">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span id="errorMsg">Something went wrong.</span>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Results -->
-    <main class="results-panel" id="resultsPanel">
-      <div class="empty-state" id="emptyState">
-        <div class="empty-icon">💰</div>
-        <h3>Ready to simulate</h3>
-        <p>Enter a ticker symbol, choose your date range and contribution amount, then click <strong>Calculate Returns</strong> to see your DCA performance.</p>
-      </div>
-      <div class="loading-state" id="loadingState">
-        <div class="spinner"></div>
-        <p id="loadingMsg">Fetching data…</p>
-      </div>
-    </main>
-  </div>
-</div>
-
-<footer>
-  Data sourced from Yahoo Finance
-  <span>·</span>
-  For educational purposes only
-  <span>·</span>
-  Not financial advice
-</footer>
-
-<script>
-(function () {
-  'use strict';
-
-  // ── DOM refs ──────────────────────────────────────────────
-  const tickerInput   = document.getElementById('ticker');
-  const checkBtn      = document.getElementById('checkBtn');
-  const tickerStatus  = document.getElementById('tickerStatus');
-  const ticker2Input  = document.getElementById('ticker2');
-  const checkBtn2     = document.getElementById('checkBtn2');
-  const tickerStatus2 = document.getElementById('tickerStatus2');
-  const startDateEl   = document.getElementById('startDate');
-  const endDateEl     = document.getElementById('endDate');
-  const frequencyEl    = document.getElementById('frequency');
-  const amountEl       = document.getElementById('amount');
-  const inflationEl    = document.getElementById('inflationRate');
-  const calcBtn        = document.getElementById('calcBtn');
-  const errorBox      = document.getElementById('errorBox');
-  const errorMsg      = document.getElementById('errorMsg');
-  const resultsPanel  = document.getElementById('resultsPanel');
-  const emptyState    = document.getElementById('emptyState');
-  const loadingState  = document.getElementById('loadingState');
-  const loadingMsg    = document.getElementById('loadingMsg');
-
-  let chartInstance   = null;
-
-  // ── Init defaults ─────────────────────────────────────────
-  (function setDefaults() {
-    endDateEl.max = formatDateValue(new Date());
-  })();
-
-  function formatDateValue(d) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${dd}`;
-  }
-
-  // ── Date parsing (avoid UTC offset issues) ────────────────
-  function parseDate(str) {
-    const [y, m, d] = str.split('-').map(Number);
-    return new Date(y, m - 1, d);
-  }
-
-  // ── Preset time ranges ────────────────────────────────────
-  function setPreset(preset) {
-    const today = new Date();
-    const end   = formatDateValue(today);
-    let start;
-    switch (preset) {
-      case 'ytd': start = formatDateValue(new Date(today.getFullYear(), 0, 1)); break;
-      case '1y':  start = formatDateValue(new Date(today.getFullYear() - 1,  today.getMonth(), today.getDate())); break;
-      case '3y':  start = formatDateValue(new Date(today.getFullYear() - 3,  today.getMonth(), today.getDate())); break;
-      case '5y':  start = formatDateValue(new Date(today.getFullYear() - 5,  today.getMonth(), today.getDate())); break;
-      case '10y': start = formatDateValue(new Date(today.getFullYear() - 10, today.getMonth(), today.getDate())); break;
-      case 'all': start = '1993-01-01'; break;
-    }
-    startDateEl.value = start;
-    endDateEl.value   = end;
-    document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', b.dataset.preset === preset));
-  }
-  setPreset('5y');
-
-  // ── ISIN lookup via Yahoo Finance search ─────────────────
-  function isISIN(val) {
-    return /^[A-Z]{2}[A-Z0-9]{10}$/.test(val);
-  }
-
-  async function lookupISIN(isin) {
-    const target = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(isin)}&quotesCount=20&newsCount=0&enableFuzzyQuery=false`;
-    const res = await fetch(`http://localhost:3001/${encodeURIComponent(target)}`);
-    if (!res.ok) throw new Error('ISIN search failed (HTTP ' + res.status + ')');
-    const json = await res.json();
-    const quotes = json.finance?.result?.quotes ?? json.quotes ?? [];
-    return quotes.filter(q => q.symbol && q.isYahooFinance !== false);
-  }
-
-  function buildExchangePicker(name, options, inputEl, statusEl, pickerEl, fundNameEl, listEl) {
-    fundNameEl.textContent = name;
-    listEl.innerHTML = '';
-    options.forEach(({ yahooTicker, label }) => {
-      const btn = document.createElement('button');
-      btn.className = 'exch-btn';
-      btn.innerHTML = `<span style="color:var(--text-3);margin-right:4px">${label}</span> ${yahooTicker}`;
-      btn.onclick = () => {
-        inputEl.value = yahooTicker;
-        listEl.querySelectorAll('.exch-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        statusEl.className = 'ticker-status success';
-        statusEl.textContent = `✓ ${name} · ${yahooTicker}`;
-      };
-      listEl.appendChild(btn);
-    });
-    pickerEl.classList.add('visible');
-  }
-
-  // ── Generic ticker setup (works for both tickers) ─────────
-  function setupTicker(inputEl, btnEl, statusEl, pickerId, fundNameId, listId) {
-    inputEl.addEventListener('input', () => {
-      const pos = inputEl.selectionStart;
-      inputEl.value = inputEl.value.toUpperCase();
-      inputEl.setSelectionRange(pos, pos);
-      statusEl.className = 'ticker-status';
-      document.getElementById(pickerId).classList.remove('visible');
-    });
-    inputEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); doCheck(); }
-    });
-    btnEl.addEventListener('click', doCheck);
-
-    async function doCheck() {
-      const raw = inputEl.value.trim();
-      if (!raw) { setStatus('error', 'Enter a ticker symbol or ISIN.'); return; }
-      btnEl.disabled = true;
-      btnEl.textContent = '…';
-      statusEl.className = 'ticker-status';
-      document.getElementById(pickerId).classList.remove('visible');
-      hideError();
-
-      if (isISIN(raw)) {
-        try {
-          setStatus('success', 'Searching ISIN…');
-          const quotes = await lookupISIN(raw);
-          if (!quotes.length) throw new Error('ISIN not found on Yahoo Finance. Look up the ticker on justetf.com or stooq.com and enter it manually.');
-          const seen = new Set();
-          const opts = [];
-          for (const q of quotes) {
-            if (seen.has(q.symbol)) continue;
-            seen.add(q.symbol);
-            opts.push({ yahooTicker: q.symbol, label: `${q.exchDisp || q.exchange || q.symbol}${q.currency ? ' · ' + q.currency : ''}` });
-          }
-          statusEl.className = 'ticker-status';
-          buildExchangePicker(quotes[0].longname || quotes[0].shortname || raw, opts,
-            inputEl, statusEl,
-            document.getElementById(pickerId),
-            document.getElementById(fundNameId),
-            document.getElementById(listId));
-          document.getElementById(listId).firstChild?.click();
-        } catch (e) { setStatus('error', `✗ ${e.message}`); }
-        finally { btnEl.disabled = false; btnEl.textContent = 'Check'; }
-        return;
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
 
-      try {
-        const now  = Math.floor(Date.now() / 1000);
-        const result = await fetchYahoo(raw, now - 7 * 86400, now);
-        const m = result.meta;
-        setStatus('success', `✓ ${m.longName || m.shortName || raw} · ${m.currency || 'USD'}`);
-      } catch (e) { setStatus('error', `✗ ${e.message}`); }
-      finally { btnEl.disabled = false; btnEl.textContent = 'Check'; }
-    }
+      :root {
+        --bg-0: #060a12;
+        --bg-1: #0b1120;
+        --bg-2: #101828;
+        --bg-3: #1a2540;
+        --border: #1e2d45;
+        --border-2: #2d3f5a;
+        --accent: #4f8ef7;
+        --accent-dim: rgba(79, 142, 247, 0.15);
+        --green: #22c55e;
+        --green-dim: rgba(34, 197, 94, 0.12);
+        --red: #f87171;
+        --red-dim: rgba(248, 113, 113, 0.12);
+        --purple: #a78bfa;
+        --text-1: #f1f5f9;
+        --text-2: #94a3b8;
+        --text-3: #475569;
+      }
 
-    function setStatus(type, msg) {
-      statusEl.className = `ticker-status ${type}`;
-      statusEl.textContent = msg;
-    }
-  }
+      html {
+        scroll-behavior: smooth;
+      }
 
-  setupTicker(tickerInput,  checkBtn,  tickerStatus,  'exchangePicker',  'isinFundName',  'exchangeList');
-  setupTicker(ticker2Input, checkBtn2, tickerStatus2, 'exchangePicker2', 'isinFundName2', 'exchangeList2');
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-0);
+        color: var(--text-1);
+        min-height: 100vh;
+        line-height: 1.5;
+      }
 
-  document.querySelectorAll('.preset-btn').forEach(btn => {
-    btn.addEventListener('click', () => setPreset(btn.dataset.preset));
-  });
-  calcBtn.addEventListener('click', runCalculation);
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-1);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border-2);
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--text-3);
+      }
 
-  // ── Yahoo Finance API fetch ───────────────────────────────
-  async function fetchYahoo(symbol, period1, period2) {
-    const bases = [
-      `https://query2.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${period1}&period2=${period2}&includePrePost=false`,
-      `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${period1}&period2=${period2}&includePrePost=false`,
-    ];
+      /* Header */
+      header {
+        background: rgba(6, 10, 18, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 0 32px;
+      }
+      .header-inner {
+        max-width: 1400px;
+        margin: 0 auto;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-1);
+        text-decoration: none;
+      }
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--accent);
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        font-size: 16px;
+      }
+      .logo span {
+        color: var(--accent);
+      }
+      .header-badge {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-3);
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        padding: 3px 10px;
+        border-radius: 20px;
+      }
 
-    let proxyReachable = false;
-    let lastHttpStatus  = null;
+      /* Main layout */
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px 32px 64px;
+      }
 
-    for (const base of bases) {
-      try {
-        const res = await fetch(`http://localhost:3001/${encodeURIComponent(base)}`);
-        proxyReachable = true;
-        if (!res.ok) { lastHttpStatus = res.status; continue; }
-        const json = await res.json();
-        const result = json.chart?.result?.[0];
-        if (!result) {
-          const errMsg = json.chart?.error?.description;
-          if (errMsg) throw new Error(errMsg);
-          continue;
+      .hero {
+        text-align: center;
+        padding: 48px 0 36px;
+      }
+      .hero h1 {
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: -1px;
+        line-height: 1.15;
+        margin-bottom: 12px;
+      }
+      .hero h1 em {
+        font-style: normal;
+        color: var(--accent);
+      }
+      .hero p {
+        font-size: 16px;
+        color: var(--text-2);
+        max-width: 520px;
+        margin: 0 auto;
+      }
+
+      /* Calculator layout */
+      .calc-grid {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+
+      /* Input panel */
+      .input-panel {
+        position: sticky;
+        top: 80px;
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .panel-header {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid var(--border);
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-2);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .panel-body {
+        padding: 20px 24px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .field label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-2);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .input-row {
+        display: flex;
+        gap: 8px;
+      }
+      .input-wrap {
+        position: relative;
+        flex: 1;
+      }
+      .input-wrap .prefix,
+      .input-wrap .suffix {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-3);
+        font-size: 14px;
+        pointer-events: none;
+      }
+      .input-wrap .prefix {
+        left: 12px;
+      }
+      .input-wrap .suffix {
+        right: 12px;
+      }
+      input[type="text"],
+      input[type="number"],
+      input[type="date"],
+      select {
+        width: 100%;
+        background: var(--bg-3);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-1);
+        font-family: "Inter", sans-serif;
+        font-size: 14px;
+        padding: 10px 12px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        outline: none;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      input[type="text"]:focus,
+      input[type="number"]:focus,
+      input[type="date"]:focus,
+      select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-dim);
+      }
+      input[type="text"].has-prefix,
+      input[type="number"].has-prefix {
+        padding-left: 28px;
+      }
+      input[type="number"].has-suffix {
+        padding-right: 28px;
+      }
+      input[type="text"] {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+      }
+      input[type="date"] {
+        color-scheme: dark;
+      }
+      select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 32px;
+        cursor: pointer;
+      }
+      .date-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      /* Ticker status */
+      .ticker-status {
+        font-size: 12px;
+        font-weight: 500;
+        padding: 6px 10px;
+        border-radius: 6px;
+        display: none;
+        align-items: center;
+        gap: 6px;
+      }
+      .ticker-status.success {
+        display: flex;
+        background: var(--green-dim);
+        color: var(--green);
+      }
+      .ticker-status.error {
+        display: flex;
+        background: var(--red-dim);
+        color: var(--red);
+      }
+
+      /* ISIN exchange picker */
+      .exchange-picker {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 12px;
+        background: var(--bg-3);
+        border: 1px solid var(--border-2);
+        border-radius: 8px;
+      }
+      .exchange-picker.visible {
+        display: flex;
+      }
+      .exchange-picker-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-3);
+      }
+      .exchange-picker-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-2);
+        line-height: 1.4;
+      }
+      .exchange-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .exch-btn {
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border-2);
+        background: var(--bg-2);
+        color: var(--text-2);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .exch-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-dim);
+      }
+      .exch-btn.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-dim);
+      }
+
+      /* Preset time buttons */
+      .preset-row {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 8px;
+      }
+      .preset-btn {
+        flex: 1;
+        padding: 5px 2px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--bg-3);
+        color: var(--text-3);
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .preset-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .preset-btn.active {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+        color: var(--accent);
+      }
+
+      /* Compare divider */
+      .compare-divider {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-3);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 2px 0;
+      }
+      .compare-divider::before,
+      .compare-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      /* Buttons */
+      .btn {
+        border: none;
+        border-radius: 8px;
+        font-family: "Inter", sans-serif;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        white-space: nowrap;
+      }
+      .btn-sm {
+        font-size: 13px;
+        padding: 10px 14px;
+      }
+      .btn-primary {
+        width: 100%;
+        font-size: 15px;
+        padding: 13px 20px;
+        background: var(--accent);
+        color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 24px rgba(79, 142, 247, 0.25);
+      }
+      .btn-primary:hover {
+        background: #6ba3f9;
+        box-shadow: 0 4px 32px rgba(79, 142, 247, 0.45);
+        transform: translateY(-1px);
+      }
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .btn-outline {
+        background: var(--bg-3);
+        border: 1px solid var(--border);
+        color: var(--text-2);
+        font-size: 13px;
+        padding: 10px 16px;
+      }
+      .btn-outline:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* Error box */
+      .error-box {
+        background: var(--red-dim);
+        border: 1px solid rgba(248, 113, 113, 0.25);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: var(--red);
+        display: none;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .error-box.visible {
+        display: flex;
+      }
+
+      /* Results panel */
+      .results-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      /* Empty state */
+      .empty-state {
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 80px 32px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .empty-icon {
+        width: 64px;
+        height: 64px;
+        background: var(--bg-3);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        font-size: 28px;
+      }
+      .empty-state h3 {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .empty-state p {
+        font-size: 14px;
+        color: var(--text-2);
+        max-width: 340px;
+        line-height: 1.6;
+      }
+
+      /* Loading */
+      .loading-state {
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 80px 32px;
+        text-align: center;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .loading-state.visible {
+        display: flex;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
-        return result;
-      } catch (e) {
-        // Re-throw real app errors (ticker not found, etc.)
-        if (proxyReachable && e.message &&
-            !e.message.includes('fetch') &&
-            !e.message.includes('Failed to fetch') &&
-            !e.message.includes('NetworkError') &&
-            !e.message.includes('Load failed')) throw e;
       }
-    }
+      .loading-state p {
+        font-size: 15px;
+        color: var(--text-2);
+      }
 
-    if (!proxyReachable) {
-      throw new Error('Proxy not reachable — make sure node server.js is running on port 3001.');
-    }
-    const statusMsg = {
-      404: `Ticker "${symbol}" not found on Yahoo Finance. Check the symbol is correct (e.g. IWDA.AS for Amsterdam, IWDA.L for London).`,
-      429: 'Rate limited by Yahoo Finance — wait a few seconds and try again.',
-      401: 'Yahoo Finance access denied (401). Try restarting node server.js.',
-      403: 'Yahoo Finance access denied (403). Try restarting node server.js.',
-    };
-    throw new Error(statusMsg[lastHttpStatus] ?? `Yahoo Finance returned HTTP ${lastHttpStatus}. Check the ticker symbol.`);
-  }
+      /* Summary cards */
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .card {
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 18px;
+      }
+      .card-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-3);
+        margin-bottom: 8px;
+      }
+      .card-value {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 22px;
+        font-weight: 500;
+        color: var(--text-1);
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .badge {
+        font-family: "Inter", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 20px;
+      }
+      .badge.green {
+        background: var(--green-dim);
+        color: var(--green);
+      }
+      .badge.red {
+        background: var(--red-dim);
+        color: var(--red);
+      }
 
-  // ── Main calculation ──────────────────────────────────────
-  function parsePrices(raw) {
-    const timestamps = raw.timestamp;
-    const closes = raw.indicators.adjclose?.[0]?.adjclose || raw.indicators.quote[0].close;
-    const arr = [];
-    for (let i = 0; i < timestamps.length; i++) {
-      const c = closes[i];
-      if (c == null || isNaN(c)) continue;
-      arr.push({ date: new Date(timestamps[i] * 1000), price: c });
-    }
-    return arr;
-  }
+      /* Chart card */
+      .chart-card {
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+      }
+      .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .chart-title {
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .chart-sub {
+        font-size: 13px;
+        color: var(--text-2);
+        margin-top: 2px;
+      }
+      .chart-legend {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-2);
+      }
+      .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .legend-dash {
+        width: 16px;
+        height: 2px;
+        border-top: 2px dashed #475569;
+        flex-shrink: 0;
+      }
+      .chart-wrap {
+        position: relative;
+        height: 320px;
+      }
 
-  function buildDCA(prices, startD, endD, freq, amount) {
-    const first = prices[0].date, last = prices[prices.length - 1].date;
-    const effStart = startD < first ? first : startD;
-    const effEnd   = endD   > last  ? last  : endD;
-    const dates = getInvestmentDates(effStart, effEnd, freq);
-    return { rows: calculateDCA(prices, dates, amount, freq), effStart, effEnd, dataStart: first, dataEnd: last };
-  }
+      /* Comparison */
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .comparison-card {
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        position: relative;
+        transition: border-color 0.2s;
+      }
+      .comparison-card.winner {
+        border-color: var(--green);
+      }
+      .comparison-card.loser {
+        opacity: 0.7;
+      }
+      .winner-badge {
+        position: absolute;
+        top: -10px;
+        right: 16px;
+        background: var(--green);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 20px;
+      }
+      .comp-label {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-3);
+        margin-bottom: 10px;
+      }
+      .comp-name {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+      .comp-stat {
+        margin-bottom: 10px;
+      }
+      .comp-stat-label {
+        font-size: 11px;
+        color: var(--text-2);
+        margin-bottom: 3px;
+      }
+      .comp-stat-value {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 18px;
+        font-weight: 500;
+      }
+      .comp-stat-value.green {
+        color: var(--green);
+      }
+      .comp-stat-value.red {
+        color: var(--red);
+      }
+      .comp-note {
+        font-size: 12px;
+        color: var(--text-3);
+        margin-top: 8px;
+        line-height: 1.5;
+      }
 
-  async function runCalculation() {
-    hideError();
-    const sym    = tickerInput.value.trim();
-    const sym2   = ticker2Input.value.trim();
-    const startS = startDateEl.value;
-    const endS   = endDateEl.value;
-    const freq      = frequencyEl.value;
-    const amount    = parseFloat(amountEl.value);
-    const inflation = Math.max(0, parseFloat(inflationEl.value) || 0) / 100;
+      /* Table */
+      .table-card {
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .table-header {
+        padding: 18px 24px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .table-title {
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .table-count {
+        font-size: 12px;
+        color: var(--text-3);
+      }
+      .table-wrap {
+        overflow-x: auto;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+      thead tr {
+        background: var(--bg-3);
+      }
+      th {
+        padding: 10px 14px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-3);
+        text-align: right;
+        white-space: nowrap;
+      }
+      th:first-child {
+        text-align: left;
+      }
+      td {
+        padding: 9px 14px;
+        font-size: 12px;
+        font-family: "JetBrains Mono", monospace;
+        text-align: right;
+        color: var(--text-2);
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      td:first-child {
+        text-align: left;
+        color: var(--text-1);
+      }
+      tbody tr:hover {
+        background: var(--bg-3);
+      }
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+      td.positive {
+        color: var(--green);
+      }
+      td.negative {
+        color: var(--red);
+      }
 
-    if (!sym)   return showError('Please enter a ticker symbol.');
-    if (!startS || !endS) return showError('Please set both start and end dates.');
-    const startD = parseDate(startS);
-    const endD   = parseDate(endS);
-    if (startD >= endD) return showError('Start date must be before end date.');
-    if (isNaN(amount) || amount <= 0) return showError('Enter a valid investment amount.');
+      /* Section wrappers (for animation) */
+      .result-section {
+        opacity: 0;
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-in {
+        animation: fadeInUp 0.4s ease forwards;
+      }
 
-    setLoading(true, `Fetching data for ${sym}…`);
-    calcBtn.disabled = true;
+      /* Footer */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 24px 32px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-3);
+        margin-top: 48px;
+      }
+      footer span {
+        color: var(--text-3);
+        margin: 0 8px;
+      }
+      footer a.bmc {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-2);
+        text-decoration: none;
+        font-size: 12px;
+        transition: color 0.2s;
+      }
+      footer a.bmc:hover {
+        color: #ffdd00;
+      }
 
-    try {
-      const p1 = Math.floor(startD.getTime() / 1000) - 86400 * 5;
-      const p2 = Math.floor(endD.getTime() / 1000)   + 86400 * 2;
-      const raw1 = await fetchYahoo(sym, p1, p2);
-      const prices1 = parsePrices(raw1);
-      if (!prices1.length) throw new Error('No price data returned.');
+      /* Section headings */
+      .section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-2);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 12px;
+      }
 
-      const { rows: dcaRows, effStart, dataStart } = buildDCA(prices1, startD, endD, freq, amount);
-      if (!dcaRows.length) throw new Error(`No price data found in the selected period. ${sym} has data from ${fmtDateShort(prices1[0].date)} — try adjusting your date range.`);
+      .coverage-warn {
+        margin-top: 12px;
+        padding: 10px 14px;
+        background: rgba(79, 142, 247, 0.08);
+        border: 1px solid rgba(79, 142, 247, 0.25);
+        border-radius: 8px;
+        color: #7aaef8;
+        font-size: 13px;
+      }
 
-      const totalInvested = dcaRows[dcaRows.length - 1].totalInvested;
-      const lumpSum       = calculateLumpSum(prices1, effStart, totalInvested);
-      const trimmed       = startD < dataStart;
-      const coverageWarn  = trimmed
-        ? `Showing ${dcaRows.length} contributions · data available from ${fmtDateShort(dataStart)}`
-        : null;
-      const res1 = {
-        sym, companyName: raw1.meta.longName || raw1.meta.shortName || sym,
-        currency: raw1.meta.currency || 'USD', dcaRows, lumpSum, totalInvested, coverageWarn,
-      };
+      /* Responsive */
+      @media (max-width: 900px) {
+        .calc-grid {
+          grid-template-columns: 1fr;
+        }
+        .input-panel {
+          position: static;
+        }
+        .summary-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .comparison-grid {
+          grid-template-columns: 1fr;
+        }
+        .hero h1 {
+          font-size: 28px;
+        }
+        .container {
+          padding: 16px 16px 48px;
+        }
+        header {
+          padding: 0 16px;
+        }
+      }
+      @media (max-width: 480px) {
+        .summary-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <a class="logo" href="#">
+          <div class="logo-icon">📈</div>
+          I Wish I <span>Invested</span>
+        </a>
+        <div class="header-badge">DCA Simulator</div>
+      </div>
+    </header>
 
-      // Optional second ticker
-      let res2 = null;
-      if (sym2) {
-        try {
-          setLoading(true, `Fetching data for ${sym2}…`);
-          const raw2    = await fetchYahoo(sym2, p1, p2);
-          const prices2 = parsePrices(raw2);
-          if (prices2.length) {
-            const { rows: dcaRows2, effStart: effStart2, dataStart: dataStart2 } = buildDCA(prices2, startD, endD, freq, amount);
-            if (dcaRows2.length) {
-              const totalInvested2 = dcaRows2[dcaRows2.length - 1].totalInvested;
-              const trimmed2       = startD < dataStart2;
-              res2 = {
-                sym: sym2, companyName: raw2.meta.longName || raw2.meta.shortName || sym2,
-                currency: raw2.meta.currency || 'USD', dcaRows: dcaRows2,
-                lumpSum: calculateLumpSum(prices2, effStart2, totalInvested2),
-                totalInvested: totalInvested2,
-                coverageWarn: trimmed2 ? `Showing ${dcaRows2.length} contributions · data available from ${fmtDateShort(dataStart2)}` : null,
-              };
+    <div class="container">
+      <div class="hero">
+        <h1>What if you had invested<br /><em>every single month?</em></h1>
+        <p>
+          Simulate Dollar Cost Averaging for any stock or ETF using real
+          historical data. See how regular investing compares to a lump sum
+          strategy.
+        </p>
+      </div>
+
+      <div class="calc-grid">
+        <!-- Input Panel -->
+        <aside class="input-panel">
+          <div class="panel-header">Parameters</div>
+          <div class="panel-body">
+            <div class="field">
+              <label>Ticker Symbol</label>
+              <div class="input-row">
+                <div class="input-wrap" style="flex: 1">
+                  <input
+                    type="text"
+                    id="ticker"
+                    placeholder="AAPL, VOO or ISIN: IE00B4L5Y983"
+                    autocomplete="off"
+                  />
+                </div>
+                <button
+                  class="btn btn-outline btn-sm"
+                  id="checkBtn"
+                  type="button"
+                >
+                  Check
+                </button>
+              </div>
+              <div class="ticker-status" id="tickerStatus"></div>
+              <div class="exchange-picker" id="exchangePicker">
+                <div class="exchange-picker-label">Select exchange</div>
+                <div class="exchange-picker-name" id="isinFundName"></div>
+                <div class="exchange-list" id="exchangeList"></div>
+              </div>
+            </div>
+
+            <div class="compare-divider">vs</div>
+
+            <div class="field">
+              <label
+                >Second Ticker
+                <span style="color: var(--text-3); font-weight: 400"
+                  >(optional)</span
+                ></label
+              >
+              <div class="input-row">
+                <div class="input-wrap" style="flex: 1">
+                  <input
+                    type="text"
+                    id="ticker2"
+                    placeholder="AAPL, BTC-USD or ISIN…"
+                    autocomplete="off"
+                  />
+                </div>
+                <button
+                  class="btn btn-outline btn-sm"
+                  id="checkBtn2"
+                  type="button"
+                >
+                  Check
+                </button>
+              </div>
+              <div class="ticker-status" id="tickerStatus2"></div>
+              <div class="exchange-picker" id="exchangePicker2">
+                <div class="exchange-picker-label">Select exchange</div>
+                <div class="exchange-picker-name" id="isinFundName2"></div>
+                <div class="exchange-list" id="exchangeList2"></div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Date Range</label>
+              <div class="preset-row">
+                <button class="preset-btn" data-preset="ytd">YTD</button>
+                <button class="preset-btn" data-preset="1y">1Y</button>
+                <button class="preset-btn" data-preset="3y">3Y</button>
+                <button class="preset-btn" data-preset="5y">5Y</button>
+                <button class="preset-btn" data-preset="10y">10Y</button>
+                <button class="preset-btn" data-preset="all">All</button>
+              </div>
+              <div class="date-row">
+                <input type="date" id="startDate" />
+                <input type="date" id="endDate" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Investment Frequency</label>
+              <select id="frequency">
+                <option value="weekly">Weekly</option>
+                <option value="biweekly">Bi-weekly (every 2 weeks)</option>
+                <option value="monthly" selected>Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="annually">Annually</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Amount Per Period</label>
+              <div class="input-wrap">
+                <span class="prefix">$</span>
+                <input
+                  type="number"
+                  id="amount"
+                  class="has-prefix"
+                  value="500"
+                  min="1"
+                  step="1"
+                />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Annual Inflation Rate</label>
+              <div class="input-wrap">
+                <input
+                  type="number"
+                  id="inflationRate"
+                  class="has-suffix"
+                  value="2.5"
+                  min="0"
+                  max="30"
+                  step="0.1"
+                />
+                <span class="suffix">%</span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" id="calcBtn" type="button">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+              Calculate Returns
+            </button>
+
+            <div class="error-box" id="errorBox">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                style="flex-shrink: 0; margin-top: 1px"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span id="errorMsg">Something went wrong.</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Results -->
+        <main class="results-panel" id="resultsPanel">
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">💰</div>
+            <h3>Ready to simulate</h3>
+            <p>
+              Enter a ticker symbol, choose your date range and contribution
+              amount, then click <strong>Calculate Returns</strong> to see your
+              DCA performance.
+            </p>
+          </div>
+          <div class="loading-state" id="loadingState">
+            <div class="spinner"></div>
+            <p id="loadingMsg">Fetching data…</p>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <footer>
+      Data sourced from Yahoo Finance
+      <span>·</span>
+      For educational purposes only
+      <span>·</span>
+      Not financial advice
+      <span>·</span>
+      <a
+        class="bmc"
+        href="https://www.buymeacoffee.com/victorpiella"
+        target="_blank"
+        rel="noopener"
+      >
+        ☕ Buy me a coffee
+      </a>
+    </footer>
+
+    <script>
+      (function () {
+        "use strict";
+
+        // ── DOM refs ──────────────────────────────────────────────
+        const tickerInput = document.getElementById("ticker");
+        const checkBtn = document.getElementById("checkBtn");
+        const tickerStatus = document.getElementById("tickerStatus");
+        const ticker2Input = document.getElementById("ticker2");
+        const checkBtn2 = document.getElementById("checkBtn2");
+        const tickerStatus2 = document.getElementById("tickerStatus2");
+        const startDateEl = document.getElementById("startDate");
+        const endDateEl = document.getElementById("endDate");
+        const frequencyEl = document.getElementById("frequency");
+        const amountEl = document.getElementById("amount");
+        const inflationEl = document.getElementById("inflationRate");
+        const calcBtn = document.getElementById("calcBtn");
+        const errorBox = document.getElementById("errorBox");
+        const errorMsg = document.getElementById("errorMsg");
+        const resultsPanel = document.getElementById("resultsPanel");
+        const emptyState = document.getElementById("emptyState");
+        const loadingState = document.getElementById("loadingState");
+        const loadingMsg = document.getElementById("loadingMsg");
+
+        let chartInstance = null;
+
+        // ── Init defaults ─────────────────────────────────────────
+        (function setDefaults() {
+          endDateEl.max = formatDateValue(new Date());
+        })();
+
+        function formatDateValue(d) {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, "0");
+          const dd = String(d.getDate()).padStart(2, "0");
+          return `${y}-${m}-${dd}`;
+        }
+
+        // ── Date parsing (avoid UTC offset issues) ────────────────
+        function parseDate(str) {
+          const [y, m, d] = str.split("-").map(Number);
+          return new Date(y, m - 1, d);
+        }
+
+        // ── Preset time ranges ────────────────────────────────────
+        function setPreset(preset) {
+          const today = new Date();
+          const end = formatDateValue(today);
+          let start;
+          switch (preset) {
+            case "ytd":
+              start = formatDateValue(new Date(today.getFullYear(), 0, 1));
+              break;
+            case "1y":
+              start = formatDateValue(
+                new Date(
+                  today.getFullYear() - 1,
+                  today.getMonth(),
+                  today.getDate(),
+                ),
+              );
+              break;
+            case "3y":
+              start = formatDateValue(
+                new Date(
+                  today.getFullYear() - 3,
+                  today.getMonth(),
+                  today.getDate(),
+                ),
+              );
+              break;
+            case "5y":
+              start = formatDateValue(
+                new Date(
+                  today.getFullYear() - 5,
+                  today.getMonth(),
+                  today.getDate(),
+                ),
+              );
+              break;
+            case "10y":
+              start = formatDateValue(
+                new Date(
+                  today.getFullYear() - 10,
+                  today.getMonth(),
+                  today.getDate(),
+                ),
+              );
+              break;
+            case "all":
+              start = "1993-01-01";
+              break;
+          }
+          startDateEl.value = start;
+          endDateEl.value = end;
+          document
+            .querySelectorAll(".preset-btn")
+            .forEach((b) =>
+              b.classList.toggle("active", b.dataset.preset === preset),
+            );
+        }
+        setPreset("5y");
+
+        // ── ISIN lookup via Yahoo Finance search ─────────────────
+        function isISIN(val) {
+          return /^[A-Z]{2}[A-Z0-9]{10}$/.test(val);
+        }
+
+        async function lookupISIN(isin) {
+          const target = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(isin)}&quotesCount=20&newsCount=0&enableFuzzyQuery=false`;
+          const res = await fetch(
+            `http://localhost:3001/${encodeURIComponent(target)}`,
+          );
+          if (!res.ok)
+            throw new Error("ISIN search failed (HTTP " + res.status + ")");
+          const json = await res.json();
+          const quotes = json.finance?.result?.quotes ?? json.quotes ?? [];
+          return quotes.filter((q) => q.symbol && q.isYahooFinance !== false);
+        }
+
+        function buildExchangePicker(
+          name,
+          options,
+          inputEl,
+          statusEl,
+          pickerEl,
+          fundNameEl,
+          listEl,
+        ) {
+          fundNameEl.textContent = name;
+          listEl.innerHTML = "";
+          options.forEach(({ yahooTicker, label }) => {
+            const btn = document.createElement("button");
+            btn.className = "exch-btn";
+            btn.innerHTML = `<span style="color:var(--text-3);margin-right:4px">${label}</span> ${yahooTicker}`;
+            btn.onclick = () => {
+              inputEl.value = yahooTicker;
+              listEl
+                .querySelectorAll(".exch-btn")
+                .forEach((b) => b.classList.remove("active"));
+              btn.classList.add("active");
+              statusEl.className = "ticker-status success";
+              statusEl.textContent = `✓ ${name} · ${yahooTicker}`;
+            };
+            listEl.appendChild(btn);
+          });
+          pickerEl.classList.add("visible");
+        }
+
+        // ── Generic ticker setup (works for both tickers) ─────────
+        function setupTicker(
+          inputEl,
+          btnEl,
+          statusEl,
+          pickerId,
+          fundNameId,
+          listId,
+        ) {
+          inputEl.addEventListener("input", () => {
+            const pos = inputEl.selectionStart;
+            inputEl.value = inputEl.value.toUpperCase();
+            inputEl.setSelectionRange(pos, pos);
+            statusEl.className = "ticker-status";
+            document.getElementById(pickerId).classList.remove("visible");
+          });
+          inputEl.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              doCheck();
+            }
+          });
+          btnEl.addEventListener("click", doCheck);
+
+          async function doCheck() {
+            const raw = inputEl.value.trim();
+            if (!raw) {
+              setStatus("error", "Enter a ticker symbol or ISIN.");
+              return;
+            }
+            btnEl.disabled = true;
+            btnEl.textContent = "…";
+            statusEl.className = "ticker-status";
+            document.getElementById(pickerId).classList.remove("visible");
+            hideError();
+
+            if (isISIN(raw)) {
+              try {
+                setStatus("success", "Searching ISIN…");
+                const quotes = await lookupISIN(raw);
+                if (!quotes.length)
+                  throw new Error(
+                    "ISIN not found on Yahoo Finance. Look up the ticker on justetf.com or stooq.com and enter it manually.",
+                  );
+                const seen = new Set();
+                const opts = [];
+                for (const q of quotes) {
+                  if (seen.has(q.symbol)) continue;
+                  seen.add(q.symbol);
+                  opts.push({
+                    yahooTicker: q.symbol,
+                    label: `${q.exchDisp || q.exchange || q.symbol}${q.currency ? " · " + q.currency : ""}`,
+                  });
+                }
+                statusEl.className = "ticker-status";
+                buildExchangePicker(
+                  quotes[0].longname || quotes[0].shortname || raw,
+                  opts,
+                  inputEl,
+                  statusEl,
+                  document.getElementById(pickerId),
+                  document.getElementById(fundNameId),
+                  document.getElementById(listId),
+                );
+                document.getElementById(listId).firstChild?.click();
+              } catch (e) {
+                setStatus("error", `✗ ${e.message}`);
+              } finally {
+                btnEl.disabled = false;
+                btnEl.textContent = "Check";
+              }
+              return;
+            }
+
+            try {
+              const now = Math.floor(Date.now() / 1000);
+              const result = await fetchYahoo(raw, now - 7 * 86400, now);
+              const m = result.meta;
+              setStatus(
+                "success",
+                `✓ ${m.longName || m.shortName || raw} · ${m.currency || "USD"}`,
+              );
+            } catch (e) {
+              setStatus("error", `✗ ${e.message}`);
+            } finally {
+              btnEl.disabled = false;
+              btnEl.textContent = "Check";
             }
           }
-        } catch(e) { console.warn('Ticker 2 error:', e.message); }
-      }
 
-      renderResults(res1, res2, inflation);
-    } catch (e) {
-      setLoading(false);
-      showError(e.message || 'Failed to fetch data. Please try again.');
-      showEmptyState();
-    } finally {
-      calcBtn.disabled = false;
-    }
-  }
+          function setStatus(type, msg) {
+            statusEl.className = `ticker-status ${type}`;
+            statusEl.textContent = msg;
+          }
+        }
 
-  // ── DCA helpers ───────────────────────────────────────────
-  function getInvestmentDates(startDate, endDate, frequency) {
-    const dates = [];
-    const cur   = new Date(startDate);
-    while (cur <= endDate) {
-      dates.push(new Date(cur));
-      switch (frequency) {
-        case 'weekly':     cur.setDate(cur.getDate() + 7); break;
-        case 'biweekly':   cur.setDate(cur.getDate() + 14); break;
-        case 'monthly':    cur.setMonth(cur.getMonth() + 1); break;
-        case 'quarterly':  cur.setMonth(cur.getMonth() + 3); break;
-        case 'annually':   cur.setFullYear(cur.getFullYear() + 1); break;
-        default:           cur.setMonth(cur.getMonth() + 1);
-      }
-    }
-    return dates;
-  }
+        setupTicker(
+          tickerInput,
+          checkBtn,
+          tickerStatus,
+          "exchangePicker",
+          "isinFundName",
+          "exchangeList",
+        );
+        setupTicker(
+          ticker2Input,
+          checkBtn2,
+          tickerStatus2,
+          "exchangePicker2",
+          "isinFundName2",
+          "exchangeList2",
+        );
 
-  // Max days we'll look forward to find a real trading day.
-  // If no price exists within this window, the investment date is skipped entirely.
-  const FREQ_WINDOW = { weekly: 4, biweekly: 5, monthly: 10, quarterly: 15, annually: 30 };
+        document.querySelectorAll(".preset-btn").forEach((btn) => {
+          btn.addEventListener("click", () => setPreset(btn.dataset.preset));
+        });
+        calcBtn.addEventListener("click", runCalculation);
 
-  function findNearestTradingDay(targetDate, prices, freq) {
-    const windowMs = (FREQ_WINDOW[freq] ?? 7) * 86400000;
-    const maxTime  = targetDate.getTime() + windowMs;
-    for (const p of prices) {
-      if (p.date.getTime() >= targetDate.getTime()) {
-        return p.date.getTime() <= maxTime ? p : null;
-      }
-    }
-    return null;
-  }
+        // ── Yahoo Finance API fetch ───────────────────────────────
+        async function fetchYahoo(symbol, period1, period2) {
+          const bases = [
+            `https://query2.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${period1}&period2=${period2}&includePrePost=false`,
+            `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${period1}&period2=${period2}&includePrePost=false`,
+          ];
 
-  function calculateDCA(prices, investmentDates, amountPerPeriod, freq) {
-    const rows = [];
-    let totalShares   = 0;
-    let totalInvested = 0;
-    let lastUsedTime  = null;
-    let rowIndex      = 1;
-    for (let i = 0; i < investmentDates.length; i++) {
-      const p = findNearestTradingDay(investmentDates[i], prices, freq);
-      if (!p) continue;
-      // Skip if this trading day was already used for a previous investment date
-      if (p.date.getTime() === lastUsedTime) continue;
-      lastUsedTime = p.date.getTime();
-      const sharesBought = amountPerPeriod / p.price;
-      totalShares   += sharesBought;
-      totalInvested += amountPerPeriod;
-      const portfolioValue = totalShares * p.price;
-      const returnPct = ((portfolioValue - totalInvested) / totalInvested) * 100;
-      rows.push({
-        index:          rowIndex++,
-        date:           p.date,
-        price:          p.price,
-        sharesBought,
-        totalShares,
-        periodInvested: amountPerPeriod,
-        totalInvested,
-        portfolioValue,
-        returnPct,
-      });
-    }
-    return rows;
-  }
+          let proxyReachable = false;
+          let lastHttpStatus = null;
 
-  function calculateLumpSum(prices, startDate, totalInvestment) {
-    const startEntry = findNearestTradingDay(startDate, prices);
-    const endEntry   = prices[prices.length - 1];
-    const shares     = totalInvestment / startEntry.price;
-    const finalValue = shares * endEntry.price;
-    const returnPct  = ((finalValue - totalInvestment) / totalInvestment) * 100;
-    return {
-      shares,
-      startPrice:      startEntry.price,
-      startDate:       startEntry.date,
-      endDate:         endEntry.date,
-      finalValue,
-      totalInvestment,
-      returnPct,
-    };
-  }
+          for (const base of bases) {
+            try {
+              const res = await fetch(
+                `http://localhost:3001/${encodeURIComponent(base)}`,
+              );
+              proxyReachable = true;
+              if (!res.ok) {
+                lastHttpStatus = res.status;
+                continue;
+              }
+              const json = await res.json();
+              const result = json.chart?.result?.[0];
+              if (!result) {
+                const errMsg = json.chart?.error?.description;
+                if (errMsg) throw new Error(errMsg);
+                continue;
+              }
+              return result;
+            } catch (e) {
+              // Re-throw real app errors (ticker not found, etc.)
+              if (
+                proxyReachable &&
+                e.message &&
+                !e.message.includes("fetch") &&
+                !e.message.includes("Failed to fetch") &&
+                !e.message.includes("NetworkError") &&
+                !e.message.includes("Load failed")
+              )
+                throw e;
+            }
+          }
 
-  // ── Formatting ────────────────────────────────────────────
-  function fmtMoney(n, compact) {
-    if (compact && Math.abs(n) >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-  }
-  function fmtPct(n) {
-    const sign = n >= 0 ? '+' : '';
-    return `${sign}${n.toFixed(2)}%`;
-  }
-  function fmtShares(n) {
-    if (n >= 1000) return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    return n.toFixed(4);
-  }
-  function fmtDateShort(d) {
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  }
+          if (!proxyReachable) {
+            throw new Error(
+              "Proxy not reachable — make sure node server.js is running on port 3001.",
+            );
+          }
+          const statusMsg = {
+            404: `Ticker "${symbol}" not found on Yahoo Finance. Check the symbol is correct (e.g. IWDA.AS for Amsterdam, IWDA.L for London).`,
+            429: "Rate limited by Yahoo Finance — wait a few seconds and try again.",
+            401: "Yahoo Finance access denied (401). Try restarting node server.js.",
+            403: "Yahoo Finance access denied (403). Try restarting node server.js.",
+          };
+          throw new Error(
+            statusMsg[lastHttpStatus] ??
+              `Yahoo Finance returned HTTP ${lastHttpStatus}. Check the ticker symbol.`,
+          );
+        }
 
-  // ── Render ────────────────────────────────────────────────
-  function setLoading(on, msg) {
-    emptyState.style.display      = 'none';
-    loadingState.classList.toggle('visible', on);
-    if (msg) loadingMsg.textContent = msg;
-    if (!on) loadingState.classList.remove('visible');
-  }
+        // ── Main calculation ──────────────────────────────────────
+        function parsePrices(raw) {
+          const timestamps = raw.timestamp;
+          const closes =
+            raw.indicators.adjclose?.[0]?.adjclose ||
+            raw.indicators.quote[0].close;
+          const arr = [];
+          for (let i = 0; i < timestamps.length; i++) {
+            const c = closes[i];
+            if (c == null || isNaN(c)) continue;
+            arr.push({ date: new Date(timestamps[i] * 1000), price: c });
+          }
+          return arr;
+        }
 
-  function showEmptyState() {
-    emptyState.style.display = '';
-  }
+        function buildDCA(prices, startD, endD, freq, amount) {
+          const first = prices[0].date,
+            last = prices[prices.length - 1].date;
+          const effStart = startD < first ? first : startD;
+          const effEnd = endD > last ? last : endD;
+          const dates = getInvestmentDates(effStart, effEnd, freq);
+          return {
+            rows: calculateDCA(prices, dates, amount, freq),
+            effStart,
+            effEnd,
+            dataStart: first,
+            dataEnd: last,
+          };
+        }
 
-  function showError(msg) {
-    errorMsg.textContent = msg;
-    errorBox.classList.add('visible');
-  }
-  function hideError() {
-    errorBox.classList.remove('visible');
-  }
+        async function runCalculation() {
+          hideError();
+          const sym = tickerInput.value.trim();
+          const sym2 = ticker2Input.value.trim();
+          const startS = startDateEl.value;
+          const endS = endDateEl.value;
+          const freq = frequencyEl.value;
+          const amount = parseFloat(amountEl.value);
+          const inflation =
+            Math.max(0, parseFloat(inflationEl.value) || 0) / 100;
 
-  function removeResultSections() {
-    document.querySelectorAll('.result-section').forEach(el => el.remove());
-    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-  }
+          if (!sym) return showError("Please enter a ticker symbol.");
+          if (!startS || !endS)
+            return showError("Please set both start and end dates.");
+          const startD = parseDate(startS);
+          const endD = parseDate(endS);
+          if (startD >= endD)
+            return showError("Start date must be before end date.");
+          if (isNaN(amount) || amount <= 0)
+            return showError("Enter a valid investment amount.");
 
-  function renderResults(res1, res2, inflation = 0) {
-    removeResultSections();
-    setLoading(false);
-    const { sym, companyName, currency, dcaRows, lumpSum, totalInvested, coverageWarn } = res1;
-    const isCompare = !!res2;
+          setLoading(true, `Fetching data for ${sym}…`);
+          calcBtn.disabled = true;
 
-    const last = dcaRows[dcaRows.length - 1];
-    const portfolioVal = last.portfolioValue;
-    const returnPct    = last.returnPct;
-    const positive     = returnPct >= 0;
+          try {
+            const p1 = Math.floor(startD.getTime() / 1000) - 86400 * 5;
+            const p2 = Math.floor(endD.getTime() / 1000) + 86400 * 2;
+            const raw1 = await fetchYahoo(sym, p1, p2);
+            const prices1 = parsePrices(raw1);
+            if (!prices1.length) throw new Error("No price data returned.");
 
-    function cardBlock(r, label, sym_, cur_) {
-      const l = r[r.length - 1];
-      const avg = r[0].totalInvested * r.length / r.length / l.totalShares * r.length;
-      const inv = l.totalInvested;
-      const pv  = l.portfolioValue;
-      const ret = l.returnPct;
-      const pos = ret >= 0;
-      return `
+            const {
+              rows: dcaRows,
+              effStart,
+              dataStart,
+            } = buildDCA(prices1, startD, endD, freq, amount);
+            if (!dcaRows.length)
+              throw new Error(
+                `No price data found in the selected period. ${sym} has data from ${fmtDateShort(prices1[0].date)} — try adjusting your date range.`,
+              );
+
+            const totalInvested = dcaRows[dcaRows.length - 1].totalInvested;
+            const lumpSum = calculateLumpSum(prices1, effStart, totalInvested);
+            const trimmed = startD < dataStart;
+            const coverageWarn = trimmed
+              ? `Showing ${dcaRows.length} contributions · data available from ${fmtDateShort(dataStart)}`
+              : null;
+            const res1 = {
+              sym,
+              companyName: raw1.meta.longName || raw1.meta.shortName || sym,
+              currency: raw1.meta.currency || "USD",
+              dcaRows,
+              lumpSum,
+              totalInvested,
+              coverageWarn,
+            };
+
+            // Optional second ticker
+            let res2 = null;
+            if (sym2) {
+              try {
+                setLoading(true, `Fetching data for ${sym2}…`);
+                const raw2 = await fetchYahoo(sym2, p1, p2);
+                const prices2 = parsePrices(raw2);
+                if (prices2.length) {
+                  const {
+                    rows: dcaRows2,
+                    effStart: effStart2,
+                    dataStart: dataStart2,
+                  } = buildDCA(prices2, startD, endD, freq, amount);
+                  if (dcaRows2.length) {
+                    const totalInvested2 =
+                      dcaRows2[dcaRows2.length - 1].totalInvested;
+                    const trimmed2 = startD < dataStart2;
+                    res2 = {
+                      sym: sym2,
+                      companyName:
+                        raw2.meta.longName || raw2.meta.shortName || sym2,
+                      currency: raw2.meta.currency || "USD",
+                      dcaRows: dcaRows2,
+                      lumpSum: calculateLumpSum(
+                        prices2,
+                        effStart2,
+                        totalInvested2,
+                      ),
+                      totalInvested: totalInvested2,
+                      coverageWarn: trimmed2
+                        ? `Showing ${dcaRows2.length} contributions · data available from ${fmtDateShort(dataStart2)}`
+                        : null,
+                    };
+                  }
+                }
+              } catch (e) {
+                console.warn("Ticker 2 error:", e.message);
+              }
+            }
+
+            renderResults(res1, res2, inflation);
+          } catch (e) {
+            setLoading(false);
+            showError(e.message || "Failed to fetch data. Please try again.");
+            showEmptyState();
+          } finally {
+            calcBtn.disabled = false;
+          }
+        }
+
+        // ── DCA helpers ───────────────────────────────────────────
+        function getInvestmentDates(startDate, endDate, frequency) {
+          const dates = [];
+          const cur = new Date(startDate);
+          while (cur <= endDate) {
+            dates.push(new Date(cur));
+            switch (frequency) {
+              case "weekly":
+                cur.setDate(cur.getDate() + 7);
+                break;
+              case "biweekly":
+                cur.setDate(cur.getDate() + 14);
+                break;
+              case "monthly":
+                cur.setMonth(cur.getMonth() + 1);
+                break;
+              case "quarterly":
+                cur.setMonth(cur.getMonth() + 3);
+                break;
+              case "annually":
+                cur.setFullYear(cur.getFullYear() + 1);
+                break;
+              default:
+                cur.setMonth(cur.getMonth() + 1);
+            }
+          }
+          return dates;
+        }
+
+        // Max days we'll look forward to find a real trading day.
+        // If no price exists within this window, the investment date is skipped entirely.
+        const FREQ_WINDOW = {
+          weekly: 4,
+          biweekly: 5,
+          monthly: 10,
+          quarterly: 15,
+          annually: 30,
+        };
+
+        function findNearestTradingDay(targetDate, prices, freq) {
+          const windowMs = (FREQ_WINDOW[freq] ?? 7) * 86400000;
+          const maxTime = targetDate.getTime() + windowMs;
+          for (const p of prices) {
+            if (p.date.getTime() >= targetDate.getTime()) {
+              return p.date.getTime() <= maxTime ? p : null;
+            }
+          }
+          return null;
+        }
+
+        function calculateDCA(prices, investmentDates, amountPerPeriod, freq) {
+          const rows = [];
+          let totalShares = 0;
+          let totalInvested = 0;
+          let lastUsedTime = null;
+          let rowIndex = 1;
+          for (let i = 0; i < investmentDates.length; i++) {
+            const p = findNearestTradingDay(investmentDates[i], prices, freq);
+            if (!p) continue;
+            // Skip if this trading day was already used for a previous investment date
+            if (p.date.getTime() === lastUsedTime) continue;
+            lastUsedTime = p.date.getTime();
+            const sharesBought = amountPerPeriod / p.price;
+            totalShares += sharesBought;
+            totalInvested += amountPerPeriod;
+            const portfolioValue = totalShares * p.price;
+            const returnPct =
+              ((portfolioValue - totalInvested) / totalInvested) * 100;
+            rows.push({
+              index: rowIndex++,
+              date: p.date,
+              price: p.price,
+              sharesBought,
+              totalShares,
+              periodInvested: amountPerPeriod,
+              totalInvested,
+              portfolioValue,
+              returnPct,
+            });
+          }
+          return rows;
+        }
+
+        function calculateLumpSum(prices, startDate, totalInvestment) {
+          const startEntry = findNearestTradingDay(startDate, prices);
+          const endEntry = prices[prices.length - 1];
+          const shares = totalInvestment / startEntry.price;
+          const finalValue = shares * endEntry.price;
+          const returnPct =
+            ((finalValue - totalInvestment) / totalInvestment) * 100;
+          return {
+            shares,
+            startPrice: startEntry.price,
+            startDate: startEntry.date,
+            endDate: endEntry.date,
+            finalValue,
+            totalInvestment,
+            returnPct,
+          };
+        }
+
+        // ── Formatting ────────────────────────────────────────────
+        function fmtMoney(n, compact) {
+          if (compact && Math.abs(n) >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
+          return new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }).format(n);
+        }
+        function fmtPct(n) {
+          const sign = n >= 0 ? "+" : "";
+          return `${sign}${n.toFixed(2)}%`;
+        }
+        function fmtShares(n) {
+          if (n >= 1000)
+            return n.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+          return n.toFixed(4);
+        }
+        function fmtDateShort(d) {
+          return d.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          });
+        }
+
+        // ── Render ────────────────────────────────────────────────
+        function setLoading(on, msg) {
+          emptyState.style.display = "none";
+          loadingState.classList.toggle("visible", on);
+          if (msg) loadingMsg.textContent = msg;
+          if (!on) loadingState.classList.remove("visible");
+        }
+
+        function showEmptyState() {
+          emptyState.style.display = "";
+        }
+
+        function showError(msg) {
+          errorMsg.textContent = msg;
+          errorBox.classList.add("visible");
+        }
+        function hideError() {
+          errorBox.classList.remove("visible");
+        }
+
+        function removeResultSections() {
+          document
+            .querySelectorAll(".result-section")
+            .forEach((el) => el.remove());
+          if (chartInstance) {
+            chartInstance.destroy();
+            chartInstance = null;
+          }
+        }
+
+        function renderResults(res1, res2, inflation = 0) {
+          removeResultSections();
+          setLoading(false);
+          const {
+            sym,
+            companyName,
+            currency,
+            dcaRows,
+            lumpSum,
+            totalInvested,
+            coverageWarn,
+          } = res1;
+          const isCompare = !!res2;
+
+          const last = dcaRows[dcaRows.length - 1];
+          const portfolioVal = last.portfolioValue;
+          const returnPct = last.returnPct;
+          const positive = returnPct >= 0;
+
+          function cardBlock(r, label, sym_, cur_) {
+            const l = r[r.length - 1];
+            const avg =
+              ((r[0].totalInvested * r.length) / r.length / l.totalShares) *
+              r.length;
+            const inv = l.totalInvested;
+            const pv = l.portfolioValue;
+            const ret = l.returnPct;
+            const pos = ret >= 0;
+            return `
         <div class="section-title">${label} · ${cur_}</div>
         <div class="summary-grid">
-          ${summaryCard('Total Invested',  fmtMoney(inv, true), null)}
-          ${summaryCard('Portfolio Value', fmtMoney(pv,  true), fmtPct(ret), pos)}
-          ${summaryCard('Total Return',    fmtMoney(pv - inv, true), null, pos, pos ? 'green' : 'red')}
-          ${summaryCard('Total Shares',    fmtShares(l.totalShares), null)}
-          ${summaryCard('Avg Cost Basis',  fmtMoney(inv / l.totalShares), null)}
-          ${summaryCard('Current Price',   fmtMoney(l.price), null)}
+          ${summaryCard("Total Invested", fmtMoney(inv, true), null)}
+          ${summaryCard("Portfolio Value", fmtMoney(pv, true), fmtPct(ret), pos)}
+          ${summaryCard("Total Return", fmtMoney(pv - inv, true), null, pos, pos ? "green" : "red")}
+          ${summaryCard("Total Shares", fmtShares(l.totalShares), null)}
+          ${summaryCard("Avg Cost Basis", fmtMoney(inv / l.totalShares), null)}
+          ${summaryCard("Current Price", fmtMoney(l.price), null)}
         </div>`;
-    }
+          }
 
-    // ── Section 1: Summary cards ─────────────────────────────
-    const s1 = createSection(0);
-    s1.innerHTML = cardBlock(dcaRows, `${companyName} (${sym})`, sym, currency);
-    if (isCompare) s1.innerHTML += cardBlock(res2.dcaRows, `${res2.companyName} (${res2.sym})`, res2.sym, res2.currency);
-    if (coverageWarn) s1.innerHTML += `<div class="coverage-warn">${coverageWarn}</div>`;
-    if (isCompare && res2.coverageWarn) s1.innerHTML += `<div class="coverage-warn">${res2.coverageWarn}</div>`;
-    resultsPanel.appendChild(s1);
+          // ── Section 1: Summary cards ─────────────────────────────
+          const s1 = createSection(0);
+          s1.innerHTML = cardBlock(
+            dcaRows,
+            `${companyName} (${sym})`,
+            sym,
+            currency,
+          );
+          if (isCompare)
+            s1.innerHTML += cardBlock(
+              res2.dcaRows,
+              `${res2.companyName} (${res2.sym})`,
+              res2.sym,
+              res2.currency,
+            );
+          if (coverageWarn)
+            s1.innerHTML += `<div class="coverage-warn">${coverageWarn}</div>`;
+          if (isCompare && res2.coverageWarn)
+            s1.innerHTML += `<div class="coverage-warn">${res2.coverageWarn}</div>`;
+          resultsPanel.appendChild(s1);
 
-    // ── Section 2: Chart ──────────────────────────────────────
-    const s2 = createSection(1);
-    const inflationLegend = inflation > 0
-      ? `<div class="legend-item"><div class="legend-dash" style="border-color:#f87171"></div> Inflation (${(inflation*100).toFixed(1)}%/yr)</div>`
-      : '';
-    const legendHtml = isCompare
-      ? `<div class="legend-item"><div class="legend-dot" style="background:#4f8ef7"></div> ${sym}</div>
+          // ── Section 2: Chart ──────────────────────────────────────
+          const s2 = createSection(1);
+          const inflationLegend =
+            inflation > 0
+              ? `<div class="legend-item"><div class="legend-dash" style="border-color:#f87171"></div> Inflation (${(inflation * 100).toFixed(1)}%/yr)</div>`
+              : "";
+          const legendHtml = isCompare
+            ? `<div class="legend-item"><div class="legend-dot" style="background:#4f8ef7"></div> ${sym}</div>
          <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> ${res2.sym}</div>
          <div class="legend-item"><div class="legend-dash"></div> Invested</div>
          ${inflationLegend}`
-      : `<div class="legend-item"><div class="legend-dot" style="background:#4f8ef7"></div> DCA</div>
+            : `<div class="legend-item"><div class="legend-dot" style="background:#4f8ef7"></div> DCA</div>
          <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Lump Sum</div>
          <div class="legend-item"><div class="legend-dash"></div> Invested</div>
          ${inflationLegend}`;
-    s2.innerHTML = `
+          s2.innerHTML = `
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">${isCompare ? `${sym} vs ${res2.sym}` : 'Portfolio Growth Over Time'}</div>
+            <div class="chart-title">${isCompare ? `${sym} vs ${res2.sym}` : "Portfolio Growth Over Time"}</div>
             <div class="chart-sub">${fmtDateShort(dcaRows[0].date)} → ${fmtDateShort(last.date)}</div>
           </div>
           <div class="chart-legend">${legendHtml}</div>
         </div>
         <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
       </div>`;
-    resultsPanel.appendChild(s2);
+          resultsPanel.appendChild(s2);
 
-    // ── Section 3: Comparison ─────────────────────────────────
-    const s3 = createSection(2);
-    if (isCompare) {
-      const l2 = res2.dcaRows[res2.dcaRows.length - 1];
-      const p1w = portfolioVal >= l2.portfolioValue;
-      s3.innerHTML = `
+          // ── Section 3: Comparison ─────────────────────────────────
+          const s3 = createSection(2);
+          if (isCompare) {
+            const l2 = res2.dcaRows[res2.dcaRows.length - 1];
+            const p1w = portfolioVal >= l2.portfolioValue;
+            s3.innerHTML = `
         <div class="section-title">DCA Comparison · ${sym} vs ${res2.sym}</div>
         <div class="comparison-grid">
-          <div class="comparison-card ${p1w ? 'winner' : 'loser'}">
-            ${p1w ? '<div class="winner-badge">Winner</div>' : ''}
+          <div class="comparison-card ${p1w ? "winner" : "loser"}">
+            ${p1w ? '<div class="winner-badge">Winner</div>' : ""}
             <div class="comp-label">${sym}</div>
             <div class="comp-name">${companyName}</div>
             <div class="comp-stat"><div class="comp-stat-label">Final Value (DCA)</div><div class="comp-stat-value">${fmtMoney(portfolioVal, true)}</div></div>
-            <div class="comp-stat"><div class="comp-stat-label">Total Return</div><div class="comp-stat-value ${positive ? 'green' : 'red'}">${fmtPct(returnPct)}</div></div>
+            <div class="comp-stat"><div class="comp-stat-label">Total Return</div><div class="comp-stat-value ${positive ? "green" : "red"}">${fmtPct(returnPct)}</div></div>
             <div class="comp-stat"><div class="comp-stat-label">Lump Sum Alt.</div><div class="comp-stat-value">${fmtMoney(lumpSum.finalValue, true)} (${fmtPct(lumpSum.returnPct)})</div></div>
             <div class="comp-note">${dcaRows.length} contributions of ${fmtMoney(dcaRows[0].periodInvested)}</div>
           </div>
-          <div class="comparison-card ${!p1w ? 'winner' : 'loser'}">
-            ${!p1w ? '<div class="winner-badge">Winner</div>' : ''}
+          <div class="comparison-card ${!p1w ? "winner" : "loser"}">
+            ${!p1w ? '<div class="winner-badge">Winner</div>' : ""}
             <div class="comp-label">${res2.sym}</div>
             <div class="comp-name">${res2.companyName}</div>
             <div class="comp-stat"><div class="comp-stat-label">Final Value (DCA)</div><div class="comp-stat-value">${fmtMoney(l2.portfolioValue, true)}</div></div>
-            <div class="comp-stat"><div class="comp-stat-label">Total Return</div><div class="comp-stat-value ${l2.returnPct >= 0 ? 'green' : 'red'}">${fmtPct(l2.returnPct)}</div></div>
+            <div class="comp-stat"><div class="comp-stat-label">Total Return</div><div class="comp-stat-value ${l2.returnPct >= 0 ? "green" : "red"}">${fmtPct(l2.returnPct)}</div></div>
             <div class="comp-stat"><div class="comp-stat-label">Lump Sum Alt.</div><div class="comp-stat-value">${fmtMoney(res2.lumpSum.finalValue, true)} (${fmtPct(res2.lumpSum.returnPct)})</div></div>
             <div class="comp-note">${res2.dcaRows.length} contributions of ${fmtMoney(res2.dcaRows[0].periodInvested)}</div>
           </div>
         </div>`;
-    } else {
-      const dcaWins = portfolioVal >= lumpSum.finalValue;
-      const avgCost = totalInvested / last.totalShares;
-      s3.innerHTML = `
+          } else {
+            const dcaWins = portfolioVal >= lumpSum.finalValue;
+            const avgCost = totalInvested / last.totalShares;
+            s3.innerHTML = `
         <div class="section-title">DCA vs Lump Sum</div>
         <div class="comparison-grid">
-          <div class="comparison-card ${dcaWins ? 'winner' : 'loser'}">
-            ${dcaWins ? '<div class="winner-badge">Winner</div>' : ''}
+          <div class="comparison-card ${dcaWins ? "winner" : "loser"}">
+            ${dcaWins ? '<div class="winner-badge">Winner</div>' : ""}
             <div class="comp-label">Strategy A</div>
             <div class="comp-name">Dollar Cost Averaging</div>
             <div class="comp-stat"><div class="comp-stat-label">Final Value</div><div class="comp-stat-value">${fmtMoney(portfolioVal, true)}</div></div>
-            <div class="comp-stat"><div class="comp-stat-label">Total Return</div><div class="comp-stat-value ${positive ? 'green' : 'red'}">${fmtPct(returnPct)}</div></div>
+            <div class="comp-stat"><div class="comp-stat-label">Total Return</div><div class="comp-stat-value ${positive ? "green" : "red"}">${fmtPct(returnPct)}</div></div>
             <div class="comp-stat"><div class="comp-stat-label">Avg Purchase Price</div><div class="comp-stat-value">${fmtMoney(avgCost)}</div></div>
             <div class="comp-note">Invested ${fmtMoney(dcaRows[0].periodInvested)} across ${dcaRows.length} contributions.</div>
           </div>
-          <div class="comparison-card ${!dcaWins ? 'winner' : 'loser'}">
-            ${!dcaWins ? '<div class="winner-badge">Winner</div>' : ''}
+          <div class="comparison-card ${!dcaWins ? "winner" : "loser"}">
+            ${!dcaWins ? '<div class="winner-badge">Winner</div>' : ""}
             <div class="comp-label">Strategy B</div>
             <div class="comp-name">Lump Sum</div>
             <div class="comp-stat"><div class="comp-stat-label">Final Value</div><div class="comp-stat-value">${fmtMoney(lumpSum.finalValue, true)}</div></div>
-            <div class="comp-stat"><div class="comp-stat-label">Total Return</div><div class="comp-stat-value ${lumpSum.returnPct >= 0 ? 'green' : 'red'}">${fmtPct(lumpSum.returnPct)}</div></div>
+            <div class="comp-stat"><div class="comp-stat-label">Total Return</div><div class="comp-stat-value ${lumpSum.returnPct >= 0 ? "green" : "red"}">${fmtPct(lumpSum.returnPct)}</div></div>
             <div class="comp-stat"><div class="comp-stat-label">Purchase Price</div><div class="comp-stat-value">${fmtMoney(lumpSum.startPrice)}</div></div>
             <div class="comp-note">All ${fmtMoney(totalInvested, true)} invested on ${fmtDateShort(lumpSum.startDate)} at once.</div>
           </div>
         </div>`;
-    }
-    resultsPanel.appendChild(s3);
+          }
+          resultsPanel.appendChild(s3);
 
-    // ── Section 4: Table(s) ───────────────────────────────────
-    resultsPanel.appendChild(buildTableSection(sym, dcaRows, 3));
-    if (isCompare) resultsPanel.appendChild(buildTableSection(res2.sym, res2.dcaRows, 4));
+          // ── Section 4: Table(s) ───────────────────────────────────
+          resultsPanel.appendChild(buildTableSection(sym, dcaRows, 3));
+          if (isCompare)
+            resultsPanel.appendChild(
+              buildTableSection(res2.sym, res2.dcaRows, 4),
+            );
 
-    // ── Build chart ───────────────────────────────────────────
-    buildChart(res1, res2, inflation);
-  }
+          // ── Build chart ───────────────────────────────────────────
+          buildChart(res1, res2, inflation);
+        }
 
-  function buildTableSection(label, dcaRows, idx) {
-    const rows = dcaRows.map(r => `
+        function buildTableSection(label, dcaRows, idx) {
+          const rows = dcaRows
+            .map(
+              (r) => `
       <tr>
         <td>${r.index}</td><td>${fmtDateShort(r.date)}</td><td>${fmtMoney(r.price)}</td>
         <td>${fmtShares(r.sharesBought)}</td><td>${fmtShares(r.totalShares)}</td>
         <td>${fmtMoney(r.periodInvested)}</td><td>${fmtMoney(r.totalInvested, true)}</td>
         <td>${fmtMoney(r.portfolioValue, true)}</td>
-        <td class="${r.returnPct >= 0 ? 'positive' : 'negative'}">${fmtPct(r.returnPct)}</td>
-      </tr>`).join('');
-    const s = createSection(idx);
-    s.innerHTML = `
+        <td class="${r.returnPct >= 0 ? "positive" : "negative"}">${fmtPct(r.returnPct)}</td>
+      </tr>`,
+            )
+            .join("");
+          const s = createSection(idx);
+          s.innerHTML = `
       <div class="table-card">
         <div class="table-header">
           <div class="table-title">${label} — Period Breakdown</div>
@@ -1357,198 +1955,208 @@
           </table>
         </div>
       </div>`;
-    return s;
-  }
+          return s;
+        }
 
-  function summaryCard(label, value, badge, isBadgePositive, valueColor) {
-    const vc = valueColor === 'green' ? `color:var(--green)` : valueColor === 'red' ? `color:var(--red)` : '';
-    const badgeHtml = badge
-      ? `<span class="badge ${isBadgePositive ? 'green' : 'red'}">${badge}</span>`
-      : '';
-    return `<div class="card">
+        function summaryCard(label, value, badge, isBadgePositive, valueColor) {
+          const vc =
+            valueColor === "green"
+              ? `color:var(--green)`
+              : valueColor === "red"
+                ? `color:var(--red)`
+                : "";
+          const badgeHtml = badge
+            ? `<span class="badge ${isBadgePositive ? "green" : "red"}">${badge}</span>`
+            : "";
+          return `<div class="card">
       <div class="card-label">${label}</div>
       <div class="card-value" style="${vc}">${value}${badgeHtml}</div>
     </div>`;
-  }
-
-  function createSection(index) {
-    const el = document.createElement('div');
-    el.className = 'result-section animate-in';
-    el.style.animationDelay = `${index * 0.1}s`;
-    return el;
-  }
-
-  // ── Chart.js ──────────────────────────────────────────────
-  function buildChart(res1, res2, inflation = 0) {
-    const canvas = document.getElementById('mainChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    const isCompare = !!res2;
-
-    // Gradients
-    const gradientBlue = ctx.createLinearGradient(0, 0, 0, 300);
-    gradientBlue.addColorStop(0, 'rgba(79,142,247,0.3)');
-    gradientBlue.addColorStop(1, 'rgba(79,142,247,0)');
-
-    const gradientAmber = ctx.createLinearGradient(0, 0, 0, 300);
-    gradientAmber.addColorStop(0, 'rgba(245,158,11,0.25)');
-    gradientAmber.addColorStop(1, 'rgba(245,158,11,0)');
-
-    const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
-    gradientPurple.addColorStop(0, 'rgba(167,139,250,0.25)');
-    gradientPurple.addColorStop(1, 'rgba(167,139,250,0)');
-
-    const labels      = res1.dcaRows.map(r => fmtDateShort(r.date));
-    const dcaValues1  = res1.dcaRows.map(r => r.portfolioValue);
-    const invested1   = res1.dcaRows.map(r => r.totalInvested);
-
-    const datasets = [
-      {
-        label: isCompare ? (res1.sym || 'Product 1') : 'DCA Portfolio',
-        data: dcaValues1,
-        borderColor: '#4f8ef7',
-        borderWidth: 2.5,
-        backgroundColor: gradientBlue,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: '#4f8ef7',
-      },
-    ];
-
-    if (isCompare) {
-      // Align res2 rows to res1 date range via index mapping
-      const dates2  = res2.dcaRows.map(r => r.date);
-      const vals2   = res2.dcaRows.map(r => r.portfolioValue);
-      // Resample res2 onto res1 labels by nearest date
-      const aligned2 = labels.map((_, i) => {
-        const target = res1.dcaRows[i].date;
-        let best = 0, bestDiff = Infinity;
-        for (let j = 0; j < dates2.length; j++) {
-          const diff = Math.abs(new Date(dates2[j]) - new Date(target));
-          if (diff < bestDiff) { bestDiff = diff; best = j; }
         }
-        return vals2[best];
-      });
 
-      datasets.push({
-        label: res2.sym || 'Product 2',
-        data: aligned2,
-        borderColor: '#f59e0b',
-        borderWidth: 2.5,
-        backgroundColor: gradientAmber,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: '#f59e0b',
-      });
-    } else {
-      // Lump sum line
-      const lsShares = res1.lumpSum.shares;
-      const lsValues = res1.dcaRows.map(r => lsShares * r.price);
-      datasets.push({
-        label: 'Lump Sum',
-        data: lsValues,
-        borderColor: '#a78bfa',
-        borderWidth: 2.5,
-        backgroundColor: gradientPurple,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: '#a78bfa',
-      });
-    }
+        function createSection(index) {
+          const el = document.createElement("div");
+          el.className = "result-section animate-in";
+          el.style.animationDelay = `${index * 0.1}s`;
+          return el;
+        }
 
-    // Total invested — gray dashed
-    datasets.push({
-      label: 'Total Invested',
-      data: invested1,
-      borderColor: '#475569',
-      borderWidth: 1.5,
-      borderDash: [6, 4],
-      backgroundColor: 'transparent',
-      fill: false,
-      tension: 0,
-      pointRadius: 0,
-      pointHoverRadius: 4,
-      pointHoverBackgroundColor: '#475569',
-    });
+        // ── Chart.js ──────────────────────────────────────────────
+        function buildChart(res1, res2, inflation = 0) {
+          const canvas = document.getElementById("mainChart");
+          if (!canvas) return;
+          const ctx = canvas.getContext("2d");
 
-    // Inflation-adjusted cost — red dashed (only if rate > 0)
-    if (inflation > 0) {
-      const t0 = res1.dcaRows[0].date.getTime();
-      const inflationValues = res1.dcaRows.map(r => {
-        const yearsElapsed = (r.date.getTime() - t0) / (365.25 * 86400000);
-        return r.totalInvested * Math.pow(1 + inflation, yearsElapsed);
-      });
-      datasets.push({
-        label: 'Inflation-adjusted Cost',
-        data: inflationValues,
-        borderColor: '#f87171',
-        borderWidth: 1.5,
-        borderDash: [4, 4],
-        backgroundColor: 'transparent',
-        fill: false,
-        tension: 0,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        pointHoverBackgroundColor: '#f87171',
-      });
-    }
+          const isCompare = !!res2;
 
-    chartInstance = new Chart(ctx, {
-      type: 'line',
-      data: { labels, datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#0b1120',
-            borderColor: '#1e2d45',
-            borderWidth: 1,
-            titleColor: '#f1f5f9',
-            bodyColor: '#94a3b8',
-            padding: 12,
-            titleFont: { family: 'Inter', size: 13, weight: '600' },
-            bodyFont: { family: 'JetBrains Mono', size: 12 },
-            callbacks: {
-              label: (item) => `  ${item.dataset.label}: ${fmtMoney(item.parsed.y, true)}`,
+          // Gradients
+          const gradientBlue = ctx.createLinearGradient(0, 0, 0, 300);
+          gradientBlue.addColorStop(0, "rgba(79,142,247,0.3)");
+          gradientBlue.addColorStop(1, "rgba(79,142,247,0)");
+
+          const gradientAmber = ctx.createLinearGradient(0, 0, 0, 300);
+          gradientAmber.addColorStop(0, "rgba(245,158,11,0.25)");
+          gradientAmber.addColorStop(1, "rgba(245,158,11,0)");
+
+          const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+          gradientPurple.addColorStop(0, "rgba(167,139,250,0.25)");
+          gradientPurple.addColorStop(1, "rgba(167,139,250,0)");
+
+          const labels = res1.dcaRows.map((r) => fmtDateShort(r.date));
+          const dcaValues1 = res1.dcaRows.map((r) => r.portfolioValue);
+          const invested1 = res1.dcaRows.map((r) => r.totalInvested);
+
+          const datasets = [
+            {
+              label: isCompare ? res1.sym || "Product 1" : "DCA Portfolio",
+              data: dcaValues1,
+              borderColor: "#4f8ef7",
+              borderWidth: 2.5,
+              backgroundColor: gradientBlue,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              pointHoverBackgroundColor: "#4f8ef7",
             },
-          },
-        },
-        scales: {
-          x: {
-            grid: { color: 'rgba(30,45,69,0.6)', drawBorder: false },
-            ticks: {
-              color: '#475569',
-              font: { family: 'Inter', size: 11 },
-              maxTicksLimit: 8,
-              maxRotation: 0,
-            },
-            border: { display: false },
-          },
-          y: {
-            grid: { color: 'rgba(30,45,69,0.6)', drawBorder: false },
-            ticks: {
-              color: '#475569',
-              font: { family: 'JetBrains Mono', size: 11 },
-              callback: (v) => fmtMoney(v, true),
-            },
-            border: { display: false },
-          },
-        },
-      },
-    });
-  }
+          ];
 
-})();
-</script>
-</body>
+          if (isCompare) {
+            // Align res2 rows to res1 date range via index mapping
+            const dates2 = res2.dcaRows.map((r) => r.date);
+            const vals2 = res2.dcaRows.map((r) => r.portfolioValue);
+            // Resample res2 onto res1 labels by nearest date
+            const aligned2 = labels.map((_, i) => {
+              const target = res1.dcaRows[i].date;
+              let best = 0,
+                bestDiff = Infinity;
+              for (let j = 0; j < dates2.length; j++) {
+                const diff = Math.abs(new Date(dates2[j]) - new Date(target));
+                if (diff < bestDiff) {
+                  bestDiff = diff;
+                  best = j;
+                }
+              }
+              return vals2[best];
+            });
+
+            datasets.push({
+              label: res2.sym || "Product 2",
+              data: aligned2,
+              borderColor: "#f59e0b",
+              borderWidth: 2.5,
+              backgroundColor: gradientAmber,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              pointHoverBackgroundColor: "#f59e0b",
+            });
+          } else {
+            // Lump sum line
+            const lsShares = res1.lumpSum.shares;
+            const lsValues = res1.dcaRows.map((r) => lsShares * r.price);
+            datasets.push({
+              label: "Lump Sum",
+              data: lsValues,
+              borderColor: "#a78bfa",
+              borderWidth: 2.5,
+              backgroundColor: gradientPurple,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              pointHoverBackgroundColor: "#a78bfa",
+            });
+          }
+
+          // Total invested — gray dashed
+          datasets.push({
+            label: "Total Invested",
+            data: invested1,
+            borderColor: "#475569",
+            borderWidth: 1.5,
+            borderDash: [6, 4],
+            backgroundColor: "transparent",
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointHoverBackgroundColor: "#475569",
+          });
+
+          // Inflation-adjusted cost — red dashed (only if rate > 0)
+          if (inflation > 0) {
+            const t0 = res1.dcaRows[0].date.getTime();
+            const inflationValues = res1.dcaRows.map((r) => {
+              const yearsElapsed =
+                (r.date.getTime() - t0) / (365.25 * 86400000);
+              return r.totalInvested * Math.pow(1 + inflation, yearsElapsed);
+            });
+            datasets.push({
+              label: "Inflation-adjusted Cost",
+              data: inflationValues,
+              borderColor: "#f87171",
+              borderWidth: 1.5,
+              borderDash: [4, 4],
+              backgroundColor: "transparent",
+              fill: false,
+              tension: 0,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              pointHoverBackgroundColor: "#f87171",
+            });
+          }
+
+          chartInstance = new Chart(ctx, {
+            type: "line",
+            data: { labels, datasets },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: "index", intersect: false },
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: "#0b1120",
+                  borderColor: "#1e2d45",
+                  borderWidth: 1,
+                  titleColor: "#f1f5f9",
+                  bodyColor: "#94a3b8",
+                  padding: 12,
+                  titleFont: { family: "Inter", size: 13, weight: "600" },
+                  bodyFont: { family: "JetBrains Mono", size: 12 },
+                  callbacks: {
+                    label: (item) =>
+                      `  ${item.dataset.label}: ${fmtMoney(item.parsed.y, true)}`,
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  grid: { color: "rgba(30,45,69,0.6)", drawBorder: false },
+                  ticks: {
+                    color: "#475569",
+                    font: { family: "Inter", size: 11 },
+                    maxTicksLimit: 8,
+                    maxRotation: 0,
+                  },
+                  border: { display: false },
+                },
+                y: {
+                  grid: { color: "rgba(30,45,69,0.6)", drawBorder: false },
+                  ticks: {
+                    color: "#475569",
+                    font: { family: "JetBrains Mono", size: 11 },
+                    callback: (v) => fmtMoney(v, true),
+                  },
+                  border: { display: false },
+                },
+              },
+            },
+          });
+        }
+      })();
+    </script>
+  </body>
 </html>
