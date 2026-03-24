@@ -17,8 +17,9 @@ module.exports = (req, res) => {
 
   let target;
   try {
-    const raw = req.url.slice(1); // strip leading /
-    target = new URL(decodeURIComponent(raw));
+    const urlParam = new URL(req.url, 'http://localhost').searchParams.get('url');
+    if (!urlParam) { res.status(400).end('Missing url param'); return; }
+    target = new URL(urlParam);
   } catch {
     res.status(400).end('Bad target URL'); return;
   }

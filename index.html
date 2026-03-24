@@ -1261,7 +1261,7 @@
         async function lookupISIN(isin) {
           const target = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(isin)}&quotesCount=20&newsCount=0&enableFuzzyQuery=false`;
           const res = await fetch(
-            `/api/proxy/${encodeURIComponent(target)}`,
+            `/api/proxy?url=${encodeURIComponent(target)}`,
           );
           if (!res.ok)
             throw new Error("ISIN search failed (HTTP " + res.status + ")");
@@ -1430,7 +1430,7 @@
           for (const base of bases) {
             try {
               const res = await fetch(
-                `/api/proxy/${encodeURIComponent(base)}`,
+                `/api/proxy?url=${encodeURIComponent(base)}`,
               );
               proxyReachable = true;
               if (!res.ok) {
